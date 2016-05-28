@@ -13,6 +13,10 @@ import java.math.BigInteger;
  */
 public class BigIntBenchmark {
 
+    public static void main(String[] args) {
+        BigIntBenchmark btest = new BigIntBenchmark();
+    }
+
     public BigIntBenchmark() {
         addBenchmark();
         multiplyBenchmark();
@@ -127,7 +131,7 @@ public class BigIntBenchmark {
         stop = System.currentTimeMillis();
         System.out.println("BigInteger time[ms]: " + (stop - start));
         System.out.println("same result: " + res.toString().equals(result.toString()));
-        
+
         System.out.println("END");
     }
 
@@ -139,7 +143,7 @@ public class BigIntBenchmark {
         StringBuilder modS = new StringBuilder("");
         for (int i = 0; i < 1000; i++) {
             baseS.append("13");
-            
+
         }
         modS.append("216");
         String base = baseS.toString();

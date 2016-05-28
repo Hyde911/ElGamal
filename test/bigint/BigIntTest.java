@@ -88,6 +88,15 @@ public class BigIntTest {
     }
 
     @Test
+    public void testHexConstructor(){
+        String decValue = "79446667167";
+        String hexValue = "127F63EF9F";
+        BigInt decBig = new BigInt(decValue);
+        BigInt hexBig = new BigInt(hexValue, 16);
+        assertEquals(decBig.toString(), hexBig.toString());
+    }
+    
+    @Test
     public void testToStringPositive() {
         String val = "4444444444";
         BigInt big = new BigInt(val);
@@ -102,6 +111,14 @@ public class BigIntTest {
         String result = big.toString();
         String expected = "-1536464644423542340000";
         assertEquals(expected, result);
+    }
+
+    @Test
+    public void testToHexString() {
+        String value = "197767964796746917641300";
+        BigInt big1 = new BigInt(value);
+        BigInteger big2 = new BigInteger(value);
+        assertEquals(big2.toString(16).toUpperCase(), big1.toHexString());
     }
 
     @Test
@@ -375,7 +392,6 @@ public class BigIntTest {
         assertEquals(expResult, result);
     }
 
-
     @Test
     public void testModBig() {
         String base = "999464546163498641674649999999";
@@ -429,7 +445,6 @@ public class BigIntTest {
         String expResult = resultBInteger.toString();
         assertEquals(expResult, result);
     }
-
 
     @Test
     public void testLeastSignificantBitTrue() {
