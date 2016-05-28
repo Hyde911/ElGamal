@@ -23,6 +23,16 @@ public class BigInt extends Number implements Comparable<BigInt> {
         setUpDigits(value.toCharArray());
     }
 
+    public BigInt(String value, int radix) {
+        if (radix == 16) {
+            digits = parseHexString(value);
+            size = digits.length;
+            signum = 1;
+        } else {
+            BigInt bigInt = new BigInt(value);
+        }
+    }
+
     private BigInt(int[] digits, int signum) {
         this.digits = trimmLeadingZeros(digits);
         this.size = this.digits.length;
@@ -94,6 +104,14 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
         System.arraycopy(copy, 0, digits, 0, size = copy.length);
         return new String(buffer, max, buffer.length - max);
+    }
+
+    public String toHexString() {
+        StringBuilder sb = new StringBuilder("");
+        for (int i = digits.length - 1; i >= 0; i--) {
+            sb.append(Integer.toHexString(digits[i]));
+        }
+        return sb.toString().toUpperCase();
     }
 
     public boolean isZero() {
@@ -603,6 +621,19 @@ public class BigInt extends Number implements Comparable<BigInt> {
             }
         }
 
+    }
+
+    private int[] parseHexString(String hexString) {
+        int len = hexString.length();
+        int [] dig = new int[len/8 + 1];
+        for (int i = 0, j = len/8; i < len; i+= 8){
+            if (i + 8 >= len){
+            dig[j--] = Integer.parseUnsignedInt(hexString.substring(i), 16);
+            }else{
+                dig[j--] = Integer.parseUnsignedInt(hexString.substring(i, i+8), 16);
+            }
+        }
+        return dig;
     }
 
     private int[] uintMul(int[] dig, int mul) {
