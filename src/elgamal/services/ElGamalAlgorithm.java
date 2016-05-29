@@ -10,6 +10,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,8 +26,11 @@ public class ElGamalAlgorithm {
 
     }
 
-    public byte[] encrypt(byte[] in, Map<String, BigInt> keys) {
-        generateKeys(keys);
+    public byte[] encrypt(byte[] in, Map<String, BigInt> keys) throws Exception {
+        if (!checkKeys(keys)){
+            throw new IncompleteKeysException();
+        }
+//        generateKeys(keys);
         List<BigInt> message = chopMessage(in);
         List<BigInt> cryptogram = new LinkedList<>();
 
@@ -114,7 +118,8 @@ public class ElGamalAlgorithm {
         return x;
     }
 
-    public Map<String, BigInt> generateKeys(Map<String, BigInt> keys) {
+    public Map<String, BigInt> generateKeys() {
+        Map<String, BigInt> keys = new HashMap<>();
         keys.clear();
         BigInteger p = generatePnumber(512);
         BigInt pI = new BigInt(p.toString());
