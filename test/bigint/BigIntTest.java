@@ -8,6 +8,7 @@ package bigint;
 import java.math.BigInteger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -87,15 +88,15 @@ public class BigIntTest {
         assertEquals(big2.toString(), big3.toString());
     }
 
-    @Test
-    public void testHexConstructor(){
-        String decValue = "79446667167";
-        String hexValue = "127F63EF9F";
-        BigInt decBig = new BigInt(decValue);
-        BigInt hexBig = new BigInt(hexValue, 16);
-        assertEquals(decBig.toString(), hexBig.toString());
-    }
-    
+//    @Test
+//    public void testHexConstructor(){
+//        String decValue = "79446667167";
+//        String hexValue = "127F63EF9F";
+//        BigInt decBig = new BigInt(decValue);
+//        BigInt hexBig = new BigInt(hexValue, 16);
+//        assertEquals(decBig.toString(), hexBig.toString());
+//    }
+//    
     @Test
     public void testToStringPositive() {
         String val = "4444444444";
@@ -113,13 +114,13 @@ public class BigIntTest {
         assertEquals(expected, result);
     }
 
-    @Test
-    public void testToHexString() {
-        String value = "197767964796746917641300";
-        BigInt big1 = new BigInt(value);
-        BigInteger big2 = new BigInteger(value);
-        assertEquals(big2.toString(16).toUpperCase(), big1.toHexString());
-    }
+//    @Test
+//    public void testToHexString() {
+//        String value = "197767964796746917641300";
+//        BigInt big1 = new BigInt(value);
+//        BigInteger big2 = new BigInteger(value);
+//        assertEquals(big2.toString(16).toUpperCase(), big1.toHexString());
+//    }
 
     @Test
     public void testAdd() {
@@ -253,6 +254,13 @@ public class BigIntTest {
         assertEquals(expResult, result, 0.0);
     }
 
+    @Test
+    public void testRandomBigInt(){
+        int bits = 512;
+        BigInt big = BigInt.getRandom(bits);
+        assertEquals(bits, big.bitLength());
+    }
+    
     @Test
     public void testSubstractLess() {
         BigInt big1 = new BigInt("9999999999999999999999999999999999999999999999999999");
@@ -437,7 +445,6 @@ public class BigIntTest {
         BigInt expBInt = new BigInt(exp);
         BigInt resultBInt = baseBInt.modPow(expBInt, modBInt);
         String result = resultBInt.toString();
-
         BigInteger baseBInteger = new BigInteger(base);
         BigInteger modBInteger = new BigInteger(mod);
         BigInteger expBInteger = new BigInteger(exp);
@@ -458,6 +465,15 @@ public class BigIntTest {
         assertFalse(b.leastSignificantBit());
     }
 
+    @Test
+    public void testPrime(){
+        int prob = 1;
+        BigInt b = BigInt.getProbalePrime(100, prob);
+        System.out.println(b);
+        BigInteger bb = new BigInteger(b.toString());
+        assertTrue(bb.isProbablePrime(prob));
+    }
+    
     @Test
     public void testDivideByBig() {
         String value1 = "6123412413412416456971672343452345235345431672344696469749474967694796479653245623242364646464";
@@ -523,6 +539,19 @@ public class BigIntTest {
         assertEquals(expResult, result);
     }
 
+    @Test
+    public void testGcd(){
+        String value1 = "623446632444764";
+        String value2 = "169654456123478";
+        BigInt big1 = new BigInt(value1);
+        BigInt big2 = new BigInt(value2);
+        BigInt big3 = BigInt.gcd(big1, big2);
+        BigInteger bbig1 = new BigInteger(value1);
+        BigInteger bbig2 = new BigInteger(value2);
+        BigInteger bbig3 = bbig1.gcd(bbig2);
+        assertEquals(bbig3.toString(), big3.toString());
+    }
+    
     @Test
     public void testShiftRight() {
         String value = "15196729642949642949672429496729696729429496729661672942967294292312001";

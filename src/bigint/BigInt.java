@@ -6,6 +6,7 @@
 package bigint;
 
 import java.util.Arrays;
+import java.util.Random;
 
 /**
  *
@@ -18,6 +19,8 @@ public class BigInt extends Number implements Comparable<BigInt> {
     private int size;
     private int signum;
     public static final BigInt ZERO = new BigInt(0);
+    public static final BigInt ONE = new BigInt(1);
+    public static final BigInt TWO = new BigInt(2);
 
     public BigInt(String value) {
         setUpDigits(value.toCharArray());
@@ -31,6 +34,12 @@ public class BigInt extends Number implements Comparable<BigInt> {
         } else {
             BigInt bigInt = new BigInt(value);
         }
+    }
+
+    public BigInt(BigInt big) {
+        this.digits = big.digits;
+        this.size = this.digits.length;
+        this.signum = big.signum;
     }
 
     private BigInt(int[] digits, int signum) {
@@ -53,6 +62,18 @@ public class BigInt extends Number implements Comparable<BigInt> {
 
     public BigInt(float value) {
         this(String.valueOf((long) value));
+    }
+
+    public static BigInt getProbalePrime(int bitLength, int probality) {
+        BigInt prime = BigInt.getRandom(bitLength);
+        int i = 0;
+        while (!BigInt.millerRabinTest(prime, probality)) {
+            prime = BigInt.getRandom(bitLength);
+//            if ((i++) >= 1000) {
+//                return null;
+//            }
+        }
+        return prime;
     }
 
     public BigInt(byte[] data) {
@@ -106,6 +127,28 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return new String(buffer, max, buffer.length - max);
     }
 
+    public static BigInt getRandom(int bitLength) {
+        int additionalInt = (bitLength % 32 == 0) ? 0 : 1;
+        int[] newDigits = new int[(bitLength / 32) + additionalInt];
+        Random rand = new Random();
+        for (int i = 0; i < newDigits.length - 1; i++) {
+            newDigits[i] = rand.nextInt();
+        }
+        if (additionalInt == 1) {
+            int minAdditionalInteger = (int) Math.pow(2, (bitLength % 32) - 1);
+            int maxAdditionalInteger = 0xFFFFFFFF >>> (32 - (bitLength % 32));
+            newDigits[newDigits.length - 1] = rand.nextInt(maxAdditionalInteger - minAdditionalInteger + 1) + minAdditionalInteger;
+        } else {
+            int tmp = 0x01;
+            for (int i = 0; i < 31; i++) {
+                tmp <<= 1;
+                tmp |= rand.nextInt(2);
+            }
+            newDigits[newDigits.length - 1] = tmp;
+        }
+        return new BigInt(newDigits, 1);
+    }
+
     public String toHexString() {
         StringBuilder sb = new StringBuilder("");
         for (int i = digits.length - 1; i >= 0; i--) {
@@ -153,7 +196,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
 
     public BigInt multiply(final BigInt other) {
         if (this.isZero() || other.isZero()) {
-            return new BigInt(0);
+            return ZERO;
         }
         int[] newDigits = multiplication(digits, size, 0, other.digits, other.size, 0);
         return new BigInt(newDigits, signum * other.signum);
@@ -175,6 +218,14 @@ public class BigInt extends Number implements Comparable<BigInt> {
 
             }
             return big;
+        }
+    }
+
+    public static BigInt gcd(BigInt big1, BigInt big2) {
+        if (big2.compareTo(BigInt.ZERO) == 0) {
+            return big1;
+        } else {
+            return BigInt.gcd(big2, big1.mod(big2));
         }
     }
 
@@ -244,6 +295,14 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return shiftR();
     }
 
+    public BigInt abs() {
+        if (this.signum == 1) {
+            return this;
+        } else {
+            return new BigInt(this.digits, 1);
+        }
+    }
+
     public BigInt mod(BigInt m) {
         if (m.isZero()) {
             throw new ArithmeticException();
@@ -272,7 +331,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
     public BigInt modPow(BigInt exp, BigInt m) {
         exp = new BigInt(exp.digits, 1);
         if (exp.isZero()) {
-            return new BigInt(1);
+            return ONE;
         } else if (exp.signum > 0) {
             return modPositivePow(exp, m);
         } else {
@@ -388,6 +447,44 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
     }
 
+    private static boolean millerRabinTest(BigInt number, int iterations) {
+//        if ( (number.digits[0] & 0x01) == 1){ //even number
+//            return false;
+//        }
+//        System.out.println("or   " + number);
+        BigInt minusOne = number.subtract(ONE);
+//        System.out.println("mOne " + minusOne);
+        BigInt mm = new BigInt(TWO.pow(minusOne.bitLength() - 1));
+//        System.out.println("mm   " + mm);
+        BigInt m = minusOne.subtract(mm);
+//        System.out.println("m    " + m);
+        
+        boolean isPrime = false;
+        
+        BigInt y0, y1, y2;
+        for (int k = 0; k < 10; k++) {
+            BigInt x = BigInt.getRandom(number.bitLength());
+            while (x.compareTo(number) >= 0 || x.compareTo(ZERO) <= 0) {
+                x = BigInt.getRandom(number.bitLength());
+            }
+            if (BigInt.gcd(x, number).compareTo(ONE) != 0) {
+                return false;
+            }
+            y0 = x.modPow(m, m);
+            if (y0.compareTo(ONE) == 0) {
+                isPrime = true;
+            }
+            y1 = y0;
+            y2 = y1.modPow(TWO, minusOne);
+//            while (y0.abs().compareTo(ONE) == 0) {
+//                
+//            }
+            
+
+        }
+        return isPrime;
+    }
+
     private static int[] shiftLeft(int[] mag, int n) {
         int ints = n >>> 5;
         int bits1 = n & 0x1f;
@@ -470,7 +567,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
 
     private BigInt modPositivePow(BigInt exp, BigInt mod) {
         BigInt x = this;
-        BigInt s = new BigInt(1);
+        BigInt s = ONE;
         BigInt z = x.mod(mod);
         int mask;
         for (int i = 0; i < exp.size; i++) {
@@ -625,12 +722,12 @@ public class BigInt extends Number implements Comparable<BigInt> {
 
     private int[] parseHexString(String hexString) {
         int len = hexString.length();
-        int [] dig = new int[len/8 + 1];
-        for (int i = 0, j = len/8; i < len; i+= 8){
-            if (i + 8 >= len){
-            dig[j--] = Integer.parseUnsignedInt(hexString.substring(i), 16);
-            }else{
-                dig[j--] = Integer.parseUnsignedInt(hexString.substring(i, i+8), 16);
+        int[] dig = new int[len / 8 + 1];
+        for (int i = 0, j = len / 8; i < len; i += 8) {
+            if (i + 8 >= len) {
+                dig[j--] = Integer.parseUnsignedInt(hexString.substring(i), 16);
+            } else {
+                dig[j--] = Integer.parseUnsignedInt(hexString.substring(i, i + 8), 16);
             }
         }
         return dig;
