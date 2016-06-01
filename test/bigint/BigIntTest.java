@@ -8,7 +8,6 @@ package bigint;
 import java.math.BigInteger;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -468,7 +467,7 @@ public class BigIntTest {
     @Test
     public void testPrime(){
         int prob = 1;
-        BigInt b = BigInt.getProbalePrime(100, prob);
+        BigInt b = BigInt.getProbalePrime(512);
         System.out.println(b);
         BigInteger bb = new BigInteger(b.toString());
         assertTrue(bb.isProbablePrime(prob));

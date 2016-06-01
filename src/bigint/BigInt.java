@@ -64,14 +64,18 @@ public class BigInt extends Number implements Comparable<BigInt> {
         this(String.valueOf((long) value));
     }
 
-    public static BigInt getProbalePrime(int bitLength, int probality) {
+    public static BigInt getProbalePrime(int bitLength) {
         BigInt prime = BigInt.getRandom(bitLength);
-        int i = 0;
-        while (!BigInt.millerRabinTest(prime, probality)) {
+        int it = 0;
+        if (bitLength <512){
+            it = 15;
+        }else if (bitLength <1024){
+            it = 10;
+        }else{
+            it = 3;
+        }
+        while (!BigInt.millerRabinTest(prime, it)) {
             prime = BigInt.getRandom(bitLength);
-//            if ((i++) >= 1000) {
-//                return null;
-//            }
         }
         return prime;
     }
@@ -448,41 +452,24 @@ public class BigInt extends Number implements Comparable<BigInt> {
     }
 
     private static boolean millerRabinTest(BigInt number, int iterations) {
-//        if ( (number.digits[0] & 0x01) == 1){ //even number
-//            return false;
-//        }
-//        System.out.println("or   " + number);
         BigInt minusOne = number.subtract(ONE);
-//        System.out.println("mOne " + minusOne);
         BigInt mm = new BigInt(TWO.pow(minusOne.bitLength() - 1));
-//        System.out.println("mm   " + mm);
-        BigInt m = minusOne.subtract(mm);
-//        System.out.println("m    " + m);
-        
-        boolean isPrime = false;
-        
-        BigInt y0, y1, y2;
-        for (int k = 0; k < 10; k++) {
+        BigInt m = minusOne.shiftLeft(mm.intValue());
+        for (int k = 0; k < iterations; k++) {
             BigInt x = BigInt.getRandom(number.bitLength());
             while (x.compareTo(number) >= 0 || x.compareTo(ZERO) <= 0) {
                 x = BigInt.getRandom(number.bitLength());
             }
-            if (BigInt.gcd(x, number).compareTo(ONE) != 0) {
-                return false;
+            int j = 0;
+            BigInt z = x.modPow(m, number);
+            while (!((j == 0 && z.compareTo(ONE) == 0) || z.compareTo(minusOne) == 0)) {
+                if (j > 0 && z.equals(ONE) || ++j == minusOne.bitLength())
+                    return false;
+                z = z.modPow(TWO, number);
             }
-            y0 = x.modPow(m, m);
-            if (y0.compareTo(ONE) == 0) {
-                isPrime = true;
-            }
-            y1 = y0;
-            y2 = y1.modPow(TWO, minusOne);
-//            while (y0.abs().compareTo(ONE) == 0) {
-//                
-//            }
-            
 
         }
-        return isPrime;
+        return true;
     }
 
     private static int[] shiftLeft(int[] mag, int n) {

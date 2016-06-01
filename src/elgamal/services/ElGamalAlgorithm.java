@@ -6,7 +6,6 @@
 package elgamal.services;
 
 import bigint.BigInt;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
@@ -98,22 +97,21 @@ public class ElGamalAlgorithm {
 
     }
 
-    private BigInteger generatePnumber(int bits) {
-        Random r = new Random();
-        return BigInteger.probablePrime(bits, r);
+    private BigInt generatePnumber(int bits) {
+        return BigInt.getProbalePrime(bits);
     }
 
-    private BigInteger generatePrivateKey(BigInteger p) {
+    private BigInt generatePrivateKey(BigInt p) {
         Random ran = new Random();
         int bits = 0;
         while (bits < 200) {
             bits = ran.nextInt(510);
         }
-        BigInteger x = new BigInteger(bits, 0, ran);
-
-        while (x.compareTo(p.subtract(BigInteger.valueOf(5))) > 0
-                || x.compareTo(BigInteger.valueOf(0)) < 0) {
-            x = new BigInteger(bits, 0, ran);
+        BigInt x = BigInt.getRandom(bits);
+        BigInt five = new BigInt(5);
+        while (x.compareTo(p.subtract(five)) > 0
+                || x.compareTo(BigInt.ZERO) < 0) {
+            x = BigInt.getRandom(bits);
         }
         return x;
     }
@@ -121,18 +119,14 @@ public class ElGamalAlgorithm {
     public Map<String, BigInt> generateKeys() {
         Map<String, BigInt> keys = new HashMap<>();
         keys.clear();
-        BigInteger p = generatePnumber(512);
-        BigInt pI = new BigInt(p.toString());
-        keys.put("p", pI);
-        BigInteger x = generatePrivateKey(p);
-        BigInt xI = new BigInt(x.toString());
-        keys.put("x", xI);
-        BigInteger g = BigInteger.valueOf(700);
-        BigInt gI = new BigInt(g.toString());
-        keys.put("g", gI);
-        BigInteger y = g.modPow(x, p);
-        BigInt yI = new BigInt(y.toString());
-        keys.put("y", yI);
+        BigInt p = generatePnumber(512);
+        keys.put("p", p);
+        BigInt x = generatePrivateKey(p);
+        keys.put("x", x);
+        BigInt g = new BigInt(700);
+        keys.put("g", g);
+        BigInt y = g.modPow(x, p);
+        keys.put("y", y);
         return keys;
     }
 
