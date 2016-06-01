@@ -76,6 +76,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
         while (!BigInt.millerRabinTest(prime, it)) {
             prime = BigInt.getRandom(bitLength);
+//            while (!BigInt.millerRabinTest(new BigInt(Arrays.copyOfRange(prime.digits, 0, 2), 1), 15)){
+//                prime = BigInt.getRandom(bitLength);
+//            }
         }
         return prime;
     }
@@ -452,6 +455,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
     }
 
     private static boolean millerRabinTest(BigInt number, int iterations) {
+        if ((number.digits[0] & 0x01) == 0){
+            return false;
+        }
         BigInt minusOne = number.subtract(ONE);
         BigInt mm = new BigInt(TWO.pow(minusOne.bitLength() - 1));
         BigInt m = minusOne.shiftLeft(mm.intValue());
