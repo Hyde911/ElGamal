@@ -466,9 +466,8 @@ public class BigIntTest {
 
     @Test
     public void testPrime(){
-        int prob = 1;
+        int prob = 10;
         BigInt b = BigInt.getProbalePrime(512);
-        System.out.println(b);
         BigInteger bb = new BigInteger(b.toString());
         assertTrue(bb.isProbablePrime(prob));
     }

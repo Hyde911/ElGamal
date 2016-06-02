@@ -43,17 +43,16 @@ public class BigIntBenchmark {
         long stop;
 
         start = System.currentTimeMillis();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10000; i++) {
             bigInt1.add(bigInt1);
         }
-
         stop = System.currentTimeMillis();
         System.out.println("BigInt time[ms]: " + (stop - start));
 
         BigInteger baseBInteger = new BigInteger(big1);
 
         start = System.currentTimeMillis();
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10000; i++) {
             baseBInteger.add(baseBInteger);
         }
         stop = System.currentTimeMillis();
@@ -66,7 +65,7 @@ public class BigIntBenchmark {
         System.out.println("----------------");
         System.out.println("Multiply benchmark");
         System.out.println("BEGIN");
-        int iteration = 50000;
+        int iteration = 20000;
 
         StringBuilder sb1 = new StringBuilder("");
         StringBuilder sb2 = new StringBuilder("");
@@ -155,17 +154,25 @@ public class BigIntBenchmark {
         long start;
         long stop;
 
-        start = System.currentTimeMillis();
         BigInt result = baseBInt.mod(modBInt);
+        start = System.currentTimeMillis();
+        for (int i = 0; i <10000; i++){
+        result = baseBInt.mod(modBInt);
+        }
         stop = System.currentTimeMillis();
+        
         System.out.println("BigInt time[ms]: " + (stop - start));
 
         BigInteger baseBInteger = new BigInteger(base);
         BigInteger modBInteger = new BigInteger(mod);
 
-        start = System.currentTimeMillis();
         BigInteger res = baseBInteger.mod(modBInteger);
+        start = System.currentTimeMillis();
+        for (int i = 0; i <10000; i++){
+        res = baseBInteger.mod(modBInteger);
+        }
         stop = System.currentTimeMillis();
+        
         System.out.println("BigInteger time[ms]: " + (stop - start));
         System.out.println("same result: " + res.toString().equals(result.toString()));
         System.out.println("END");

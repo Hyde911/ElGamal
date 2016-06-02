@@ -14,13 +14,26 @@ import java.util.Random;
  */
 public class BigInt extends Number implements Comparable<BigInt> {
 
+    /*
+    mask used to cast int into logn
+    */
     private static final long MASK = (1L << 32) - 1;
+    /*
+    little endian digits represantiona
+    */
     private int[] digits;
+    /*
+    size of digits aray
+    */
     private int size;
+    /*
+    sign
+    */
     private int signum;
     public static final BigInt ZERO = new BigInt(0);
     public static final BigInt ONE = new BigInt(1);
     public static final BigInt TWO = new BigInt(2);
+
 
     public BigInt(String value) {
         setUpDigits(value.toCharArray());
@@ -31,9 +44,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
             digits = parseHexString(value);
             size = digits.length;
             signum = 1;
-        } else {
-            BigInt bigInt = new BigInt(value);
-        }
+        } 
     }
 
     public BigInt(BigInt big) {
@@ -64,6 +75,11 @@ public class BigInt extends Number implements Comparable<BigInt> {
         this(String.valueOf((long) value));
     }
 
+    /**
+     *  Returns proable prime number
+     * @param bitLength
+     * @return
+     */
     public static BigInt getProbalePrime(int bitLength) {
         BigInt prime = BigInt.getRandom(bitLength);
         int it = 0;
@@ -76,13 +92,13 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
         while (!BigInt.millerRabinTest(prime, it)) {
             prime = BigInt.getRandom(bitLength);
-//            while (!BigInt.millerRabinTest(new BigInt(Arrays.copyOfRange(prime.digits, 0, 2), 1), 15)){
-//                prime = BigInt.getRandom(bitLength);
-//            }
         }
         return prime;
     }
 
+    /**
+     * @param data
+     */
     public BigInt(byte[] data) {
         signum = 1;
         int bitLength = data.length;
@@ -134,6 +150,11 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return new String(buffer, max, buffer.length - max);
     }
 
+    /**
+     * Generates random number
+     * @param bitLength
+     * @return
+     */
     public static BigInt getRandom(int bitLength) {
         int additionalInt = (bitLength % 32 == 0) ? 0 : 1;
         int[] newDigits = new int[(bitLength / 32) + additionalInt];
@@ -164,6 +185,10 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return sb.toString().toUpperCase();
     }
 
+    /**
+     * Checks if BigInt is zero
+     * @return
+     */
     public boolean isZero() {
         for (int i : digits) {
             if (i != 0) {
@@ -173,6 +198,11 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return true;
     }
 
+    /**
+     * Adds this+other
+     * @param other
+     * @return
+     */
     public BigInt add(final BigInt other) {
         int[] newDigits;
         int newSignum = 1;
@@ -185,6 +215,11 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return new BigInt(newDigits, newSignum);
     }
 
+    /**
+     * Substrats this-other
+     * @param other
+     * @return
+     */
     public BigInt subtract(final BigInt other) {
         int[] newDigits;
         int newSignum;
@@ -192,15 +227,20 @@ public class BigInt extends Number implements Comparable<BigInt> {
         if (compare == 0) {
             return new BigInt("0");
         } else if (compare > 0) {
-            newDigits = substraction(this.digits, other.digits);
+            newDigits = subtraction(this.digits, other.digits);
             newSignum = 1;
         } else {
-            newDigits = substraction(other.digits, this.digits);
+            newDigits = subtraction(other.digits, this.digits);
             newSignum = -1;
         }
         return new BigInt(trimmLeadingZeros(newDigits), newSignum);
     }
 
+    /**
+     * Multiplies this*other
+     * @param other
+     * @return
+     */
     public BigInt multiply(final BigInt other) {
         if (this.isZero() || other.isZero()) {
             return ZERO;
@@ -213,6 +253,11 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return new BigInt(shiftBaseTimes(digits, shift), signum);
     }
 
+    /**
+     * Exponentiation this**exponent
+     * @param exponent
+     * @return
+     */
     public BigInt pow(int exponent) {
         if (exponent == 0) {
             return new BigInt("1");
@@ -228,6 +273,12 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
     }
 
+    /**
+     * Greatest common divisor of big1 and big2
+     * @param big1
+     * @param big2
+     * @return
+     */
     public static BigInt gcd(BigInt big1, BigInt big2) {
         if (big2.compareTo(BigInt.ZERO) == 0) {
             return big1;
@@ -236,6 +287,11 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
     }
 
+    /**
+     * Divides this/divider
+     * @param divider
+     * @return
+     */
     public BigInt divide(BigInt divider) {
         if (divider.isZero()) {
             throw new ArithmeticException("dividing by zero");
@@ -246,11 +302,10 @@ public class BigInt extends Number implements Comparable<BigInt> {
             return new BigInt(trimmLeadingZeros(newDigits), this.signum * divider.signum);
         }
         if (this.compareTo(divider) == 0) {
-            int[] one = {1};
-            return new BigInt(one, this.signum * divider.signum);
+            return ONE;
         }
         if (this.compareTo(divider) < 0) {
-            return new BigInt("0");
+            return ZERO;
         }
 
         final int[] newDigits = new int[this.size - divider.size + 1];
@@ -261,7 +316,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
         int[] divident = Arrays.copyOf(digits, size + 1);
         int[] div = Arrays.copyOf(divider.digits, divider.size + 1);
-        div(divident, div, size, divider.size, newDigits);
+        knuthDividing(divident, div, size, divider.size, newDigits);
         return new BigInt(trimmLeadingZeros(newDigits), 1);
 
     }
@@ -275,6 +330,10 @@ public class BigInt extends Number implements Comparable<BigInt> {
 
     }
 
+    /**
+     * Creates bytes represation of BigInt
+     * @return
+     */
     public byte[] toByteArray() {
         int byteLength = bitLength() / 8 + 1;
         byte[] byteArray = new byte[byteLength];
@@ -292,9 +351,6 @@ public class BigInt extends Number implements Comparable<BigInt> {
         if (byteArray[byteLength - 1] == 0x00) {
             byteArray = Arrays.copyOfRange(byteArray, 0, byteLength - 1);
         }
-        for (byte b : byteArray) {
-//            System.out.println(b);
-        }
         return byteArray;
     }
 
@@ -302,6 +358,10 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return shiftR();
     }
 
+    /**
+     * Abstract value of this
+     * @return
+     */
     public BigInt abs() {
         if (this.signum == 1) {
             return this;
@@ -310,20 +370,25 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
     }
 
+    /**
+     * Modulo this%m
+     * @param m
+     * @return
+     */
     public BigInt mod(BigInt m) {
         if (m.isZero()) {
             throw new ArithmeticException();
         }
-//        System.out.println(toString() + "mod(" + m.toString() + ")");
         BigInt quotient = this.divide(m);
-//        System.out.println("quotient: " + quotient.toString());
         BigInt mul = m.multiply(quotient);
-//        System.out.println("mul:      " + mul.toString());
         BigInt reminder = this.subtract(mul);
-//        System.out.println("rem:      " + reminder.toString());
         return reminder;
     }
 
+    /**
+     * Calculates number of bits 
+     * @return
+     */
     public int bitLength() {
         int length = digits.length;
         if (length == 0) {
@@ -335,6 +400,12 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return tmp1 + tmp2;
     }
 
+    /**
+     * Modular exponentiation this**exp mod m
+     * @param exp
+     * @param m
+     * @return
+     */
     public BigInt modPow(BigInt exp, BigInt m) {
         exp = new BigInt(exp.digits, 1);
         if (exp.isZero()) {
@@ -346,13 +417,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
     }
 
-    private int[] realloc(int[] dig, int newLen) {
-        final int[] res = new int[newLen];
-        Arrays.fill(res, 0);
-        System.arraycopy(dig, 0, res, 0, dig.length);
-        return res;
-    }
-
+    /*
+    translates []chars into []int and saves it in this.digits
+    */
     private void setUpDigits(char[] chars) {
         signum = 1;
         if (chars[0] == '-') {
@@ -381,7 +448,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
             multiAdd(1000000000, parse);
         }
     }
-
+    /*
+    simple addition
+    */
     private int[] addition(final int[] n1, final int[] n2) {
         int size1 = n1.length;
         int size2 = n2.length;
@@ -407,8 +476,10 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
         return add;
     }
-
-    private int[] substraction(final int[] n1, final int[] n2) {
+    /*
+    simple subtraction
+    */
+    private int[] subtraction(final int[] n1, final int[] n2) {
         int size1 = n1.length;
         int size2 = n2.length;
 
@@ -433,8 +504,14 @@ public class BigInt extends Number implements Comparable<BigInt> {
 
         return sub;
     }
-
+    /*
+    Recursive implementation of multiplication using Karatsuba Algorithm
+    https://en.wikipedia.org/wiki/Karatsuba_algorithm
+    */
     private int[] multiplication(int[] n1, int size1, int startIndex1, int[] n2, int size2, int startIndex2) {
+        /*
+        for small magnitute use simple multiplication
+        */
         if (size1 <= 128 || size2 <= 128) {
             return smallMultiplication(n1, size1, startIndex1, n2, size2, startIndex2);
         } else {
@@ -450,10 +527,12 @@ public class BigInt extends Number implements Comparable<BigInt> {
             int c_dSize = c_d.length;
             int[] part3 = multiplication(a_b, a_bSize, 0, c_d, c_dSize, 0);
 
-            return addArrays(addArrays(shiftBaseTimes(part1, 2 * split), shiftBaseTimes(substraction(part3, addArrays(part1, part2)), split)), part2);
+            return addArrays(addArrays(shiftBaseTimes(part1, 2 * split), shiftBaseTimes(subtraction(part3, addArrays(part1, part2)), split)), part2);
         }
     }
-
+    /*
+    Miller-Rabin test for primality
+    */
     private static boolean millerRabinTest(BigInt number, int iterations) {
         if ((number.digits[0] & 0x01) == 0){
             return false;
@@ -467,18 +546,20 @@ public class BigInt extends Number implements Comparable<BigInt> {
                 x = BigInt.getRandom(number.bitLength());
             }
             int j = 0;
-            BigInt z = x.modPow(m, number);
-            while (!((j == 0 && z.compareTo(ONE) == 0) || z.compareTo(minusOne) == 0)) {
-                if (j > 0 && z.equals(ONE) || ++j == minusOne.bitLength())
+            BigInt y = x.modPow(m, number);
+            while (!((j == 0 && y.compareTo(ONE) == 0) || y.compareTo(minusOne) == 0)) {
+                if (j > 0 && y.equals(ONE) || ++j == minusOne.bitLength())
                     return false;
-                z = z.modPow(TWO, number);
+                y = y.modPow(TWO, number);
             }
 
         }
         return true;
     }
-
-    private static int[] shiftLeft(int[] mag, int n) {
+    /*
+    shifts []m n's times to the left
+    */
+    private int[] shiftLeft(int[] mag, int n) {
         int ints = n >>> 5;
         int bits1 = n & 0x1f;
         int dLength = mag.length;
@@ -505,7 +586,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
         return result;
     }
-
+    /*
+    divides []n by div, returns reminder
+    */
     private int udiv(final int div, int[] n) {
         final long d = div & MASK;
         long rem = 0;
@@ -516,13 +599,11 @@ public class BigInt extends Number implements Comparable<BigInt> {
             n[i] = (int) (rem / d);
             rem = rem % d;
         }
-        if (n[len - 1] == 0 && len > 1) {
-            n = Arrays.copyOfRange(n, 0, len - 1);
-        }
-
         return (int) rem;
     }
-
+    /*
+    shifts this.digits by one bit to the right
+    */
     private BigInt shiftR() {
         int newMag[] = new int[size];
         newMag[0] = digits[0] >>> 1;
@@ -535,13 +616,20 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return new BigInt((newMag), signum);
     }
 
+    /**
+     * Checks if least significant bit is set (number is odd).
+     * @return
+     */
     public boolean leastSignificantBit() {
         if ((this.digits[0] & 0x01) == 1) {
             return true;
         }
         return false;
     }
-
+    
+    /*
+    divides this.digits[] by div
+    */
     private int udivDigits(final int div) {
         final long d = div & MASK;
         long rem = 0;
@@ -558,6 +646,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return (int) rem;
     }
 
+    /*
+    implementation of modular exponentiation with positive exponent
+    */
     private BigInt modPositivePow(BigInt exp, BigInt mod) {
         BigInt x = this;
         BigInt s = ONE;
@@ -577,6 +668,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return s;
     }
 
+    /*
+    adds two arrays from given index
+    */
     private int[] addArrays(final int[] n1, int size1, int startIndex1, final int[] n2, int size2, int startIndex2) {
         if (n1.length >= n2.length) {
             return subArrayAddition(n1, size1, startIndex1, n2, size2);
@@ -584,7 +678,10 @@ public class BigInt extends Number implements Comparable<BigInt> {
             return subArrayAddition(n2, size2, startIndex2, n1, size1);
         }
     }
-
+    
+    /*
+    adds two whole arrays
+    */
     private int[] addArrays(int[] n1, int[] n2) {
         if (n1.length >= n2.length) {
             return addition(n1, n2);
@@ -616,6 +713,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return add;
     }
 
+    /*
+    long multplication
+    */
     private int[] smallMultiplication(int[] n1, int size1, int startIndex1, int[] n2, int size2, int startIndex2) {
         final int[] result = new int[size1 + size2];
         long carry = 0;
@@ -641,6 +741,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         return result;
     }
 
+    /*
+    removes leading zeros from []n if present
+    */
     private int[] trimmLeadingZeros(final int[] n) {
         int zeros = 0;
         for (int i = n.length - 1; i >= 0; i--) {
@@ -725,35 +828,15 @@ public class BigInt extends Number implements Comparable<BigInt> {
         }
         return dig;
     }
-
-    private int[] uintMul(int[] dig, int mul) {
-        if (mul == 0) {
-            int[] d = {0};
-            return d;
-        }
-        long carry = 0;
-        long n = mul & MASK;
-        int[] newDigits = Arrays.copyOf(dig, dig.length);
-        for (int i = 0; i < dig.length; i++) {
-            carry = (newDigits[i] & MASK) * n + carry;
-            newDigits[i] = (int) carry;
-            carry >>>= 32;
-        }
-        if (carry == 0) {
-            return newDigits;
-        } else {
-            int[] tmp = new int[dig.length + 1];
-            System.arraycopy(newDigits, 0, tmp, 0, dig.length);
-            tmp[dig.length] = (int) carry;
-            return tmp;
-        }
-    }
-
-    private void div(final int[] u, final int[] v, final int m, final int n, final int[] q) {
-        final long b = 1L << 32;
+    
+    /*
+    Hacker'sDelight's implementation of Knuth's Algorithm D
+    */
+    private void knuthDividing(final int[] u, final int[] v, final int m, final int n, final int[] quotient) {
+        final long base = 1L << 32;
         long qhat;
         long rhat;
-        long p;
+        long product;
 
         int s, i, j;
         long t, k;
@@ -774,7 +857,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
         final long dh = v[n - 1] & MASK, dl = v[n - 2] & MASK, hbit = Long.MIN_VALUE;
 
         for (j = m - n; j >= 0; j--) {
-            k = u[j + n] * b + (u[j + n - 1] & MASK);
+            k = u[j + n] * base + (u[j + n - 1] & MASK);
             qhat = (k >>> 1) / dh << 1;
             t = k - qhat * dh;
             if (t + hbit > dh + hbit) {
@@ -782,27 +865,27 @@ public class BigInt extends Number implements Comparable<BigInt> {
             }
             rhat = k - qhat * dh;
 
-            while (qhat + hbit >= b + hbit || qhat * dl + hbit > b * rhat + (u[j + n - 2] & MASK) + hbit) {
+            while (qhat + hbit >= base + hbit || qhat * dl + hbit > base * rhat + (u[j + n - 2] & MASK) + hbit) {
                 qhat = qhat - 1;
                 rhat = rhat + dh;
-                if (rhat + hbit >= b + hbit) {
+                if (rhat + hbit >= base + hbit) {
                     break;
                 }
             }
 
             k = 0;
             for (i = 0; i < n; i++) {
-                p = qhat * (v[i] & MASK);
-                t = (u[i + j] & MASK) - k - (p & MASK);
+                product = qhat * (v[i] & MASK);
+                t = (u[i + j] & MASK) - k - (product & MASK);
                 u[i + j] = (int) t;
-                k = (p >>> 32) - (t >> 32);
+                k = (product >>> 32) - (t >> 32);
             }
             t = (u[j + n] & MASK) - k;
             u[j + n] = (int) t;
 
-            q[j] = (int) qhat;
+            quotient[j] = (int) qhat;
             if (t < 0) {
-                q[j] = q[j] - 1;
+                quotient[j] = quotient[j] - 1;
                 k = 0;
                 for (i = 0; i < n; i++) {
                     t = (u[i + j] & MASK) + (v[i] & MASK) + k;

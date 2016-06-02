@@ -29,7 +29,7 @@ public class ElGamalAlgorithm {
         if (!checkKeys(keys)){
             throw new IncompleteKeysException();
         }
-//        generateKeys(keys);
+
         List<BigInt> message = chopMessage(in);
         List<BigInt> cryptogram = new LinkedList<>();
 
@@ -42,13 +42,25 @@ public class ElGamalAlgorithm {
                 k = ran.nextInt(700);
             }
             BigInt kk = new BigInt(k);
+            /*
+            a = g^kk mod p
+            */
             a = keys.get("g").modPow(kk, keys.get("p"));
             cryptogram.add(a);
+            /*
+            b = y^k mod p * M
+            */
             b = keys.get("y").modPow(kk, keys.get("p")).multiply(message.get(j));
+            /*
+            b = b mod p
+            */
             b = b.mod(keys.get("p"));
             cryptogram.add(b);
         }
 
+        /*
+        tranlates cryptogram into list of bytes
+        */
         List<Byte> crypt = new LinkedList<>();
         for (BigInt word : cryptogram) {
             int fill = 0;
@@ -61,10 +73,11 @@ public class ElGamalAlgorithm {
                 crypt.add((byte) 0x00);
             }
         }
+        /*
+        merges list of bytes into return array
+        */
         byte[] data = new byte[crypt.size()];
         for (int i = 0; i < crypt.size(); i++) {
-            if (i % 30 == 0) {
-            }
             data[i] = crypt.get(i);
         }
         cryptogram.clear();
@@ -82,7 +95,13 @@ public class ElGamalAlgorithm {
         for (int i = 0; i < cryptogram.size();) {
             BigInt a = cryptogram.get(i);
             BigInt b = cryptogram.get(i + 1);
+            /*
+            m1 = a^(p - 1 - x) mod p
+            */
             BigInt m1 = a.modPow(keys.get("p").subtract(one).subtract(keys.get("x")), keys.get("p"));
+            /*
+            m2 = m1 * b mod p
+            */
             BigInt m2 = (m1.multiply(b)).mod(keys.get("p"));
             decrypted.add(m2.toByteArray());
             i += 2;
@@ -96,11 +115,15 @@ public class ElGamalAlgorithm {
         }
 
     }
-
+    /*
+    generates public p - key
+    */
     private BigInt generatePnumber(int bits) {
         return BigInt.getProbalePrime(bits);
     }
-
+    /*
+    generate private x - key
+    */
     private BigInt generatePrivateKey(BigInt p) {
         Random ran = new Random();
         int bits = 0;
@@ -130,6 +153,9 @@ public class ElGamalAlgorithm {
         return keys;
     }
 
+    /*
+    splits message into 64-byte long blocks
+    */
     private List<BigInt> chopMessage(byte[] rawData) {
         List<BigInt> message = new LinkedList<>();
         byte[] baseData = Base64.getEncoder().encode(rawData);
@@ -146,11 +172,10 @@ public class ElGamalAlgorithm {
         return message;
     }
 
+    /*
+    splits cipher into 64-byte long blocks
+    */
     private List<BigInt> chopCryptogram(byte[] cryptoData) {
-        for (int i = 0; i < cryptoData.length; i++) {
-            if (i % 30 == 0) {
-            }
-        }
         List<BigInt> cryptogram = new LinkedList<>();
         int cryptLength = cryptoData.length;
         for (int i = 0; i < cryptLength; i += 64) {
@@ -159,6 +184,9 @@ public class ElGamalAlgorithm {
         return cryptogram;
     }
 
+    /*
+    merges decrypted blocks into single message
+    */
     private byte[] mergeMessage(List<byte[]> message) {
         int it = 0;
         for (byte[] b : message) {
@@ -174,6 +202,9 @@ public class ElGamalAlgorithm {
         return decrypted;
     }
 
+    /*
+    checks if keys map is complete
+    */
     private boolean checkKeys(Map<String, BigInt> keys) {
         if (keys == null) {
             return false;

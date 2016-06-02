@@ -9,7 +9,6 @@ import bigint.BigInt;
 import elgamal.services.ElGamalAlgorithm;
 import elgamal.services.FilesService;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Base64;
 import java.util.Map;
