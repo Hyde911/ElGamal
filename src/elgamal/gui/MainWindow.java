@@ -315,7 +315,7 @@ public class MainWindow extends javax.swing.JFrame {
 
     private void jButtonLoadCipherActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButtonLoadCipherActionPerformed
         try {
-            jLabelLoadedFile.setText(helper.openCipher(this).toString());
+            jLabelLoadedCipher.setText(helper.openCipher(this).toString());
             jButtonDecipher.setEnabled(true);
         } catch (NoFileException ex) {
             jLabelLoadedFile.setText("Brak pliku");
