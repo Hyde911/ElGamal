@@ -21,6 +21,8 @@ import java.util.Random;
  */
 public class ElGamalAlgorithm {
 
+    int blockLength;
+    
     public ElGamalAlgorithm() {
 
     }
@@ -29,19 +31,19 @@ public class ElGamalAlgorithm {
         if (!checkKeys(keys)) {
             throw new IncompleteKeysException();
         }
-
+        blockLength = keys.get("p").bitLength()/8;
         List<BigInt> message = chopMessage(in);
         List<BigInt> cryptogram = new LinkedList<>();
 
         BigInt a;
         BigInt b;
         for (int j = 0; j < message.size(); j++) {
-            Random ran = new Random();
-            int k = ran.nextInt(700);
-            while (k < 600) {
-                k = ran.nextInt(700);
-            }
-            BigInt kk = new BigInt(k);
+//            Random ran = new Random();
+//            int k = ran.nextInt(700);
+//            while (k < 600) {
+//                k = ran.nextInt(700);
+//            }
+            BigInt kk = BigInt.getRandom(128);
             /*
             a = g^kk mod p
              */
@@ -69,7 +71,7 @@ public class ElGamalAlgorithm {
                 crypt.add(word.toByteArray()[i]);
                 fill++;
             }
-            for (int i = fill; i < 64; i++) {
+            for (int i = fill; i < blockLength; i++) {
                 crypt.add((byte) 0x00);
             }
         }
@@ -89,6 +91,8 @@ public class ElGamalAlgorithm {
         if (!checkKeys(keys)) {
             throw new IncompleteKeysException();
         }
+        blockLength = keys.get("p").bitLength()/8;
+        
         List<BigInt> cryptogram = chopCryptogram(crypt);
         List<byte[]> decrypted = new ArrayList<>();
         BigInt one = new BigInt(1);
@@ -121,28 +125,28 @@ public class ElGamalAlgorithm {
     generate private x - key
      */
     private BigInt generatePrivateKey(BigInt p) {
-        Random ran = new Random();
-        int bits = 0;
-        while (bits < 200) {
-            bits = ran.nextInt(510);
-        }
-        BigInt x = BigInt.getRandom(bits);
-        BigInt five = new BigInt(5);
-        while (x.compareTo(p.subtract(five)) > 0
+//        Random ran = new Random();
+//        int bits = 0;
+//        while (bits < 200) {
+//            bits = ran.nextInt(510);
+//        }
+        BigInt pMinusOne = p.subtract(BigInt.ONE);
+        BigInt x = BigInt.getRandom(p.bitLength());
+        while (x.compareTo(pMinusOne) > 0
                 || x.compareTo(BigInt.ZERO) < 0) {
-            x = BigInt.getRandom(bits);
+            x = BigInt.getRandom(p.bitLength());
         }
         return x;
     }
 
-    public Map<String, BigInt> generateKeys() {
+    public Map<String, BigInt> generateKeys(int bitLength) {
         Map<String, BigInt> keys = new HashMap<>();
         keys.clear();
-        BigInt p = generatePnumber(512);
+        BigInt p = generatePnumber(bitLength);
         keys.put("p", p);
         BigInt x = generatePrivateKey(p);
         keys.put("x", x);
-        BigInt g = new BigInt(700);
+        BigInt g = BigInt.getRandom(300);
         keys.put("g", g);
         BigInt y = g.modPow(x, p);
         keys.put("y", y);
@@ -156,13 +160,13 @@ public class ElGamalAlgorithm {
         List<BigInt> message = new LinkedList<>();
         byte[] baseData = Base64.getEncoder().encode(rawData);
         int len = baseData.length;
-        for (int i = 0; i < len; i += 64) {
-            if (i + 64 > len) {
+        for (int i = 0; i < len; i += blockLength) {
+            if (i + blockLength > len) {
                 BigInt tmp = new BigInt(Arrays.copyOfRange(baseData, i, len));
                 message.add(tmp);
                 break;
             }
-            BigInt tmp = new BigInt(Arrays.copyOfRange(baseData, i, i + 64));
+            BigInt tmp = new BigInt(Arrays.copyOfRange(baseData, i, i + blockLength));
             message.add(tmp);
         }
         return message;
@@ -174,8 +178,8 @@ public class ElGamalAlgorithm {
     private List<BigInt> chopCryptogram(byte[] cryptoData) {
         List<BigInt> cryptogram = new LinkedList<>();
         int cryptLength = cryptoData.length;
-        for (int i = 0; i < cryptLength; i += 64) {
-            cryptogram.add(new BigInt(Arrays.copyOfRange(cryptoData, i, i + 64)));
+        for (int i = 0; i < cryptLength; i += blockLength) {
+            cryptogram.add(new BigInt(Arrays.copyOfRange(cryptoData, i, i + blockLength)));
         }
         return cryptogram;
     }

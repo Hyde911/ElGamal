@@ -180,8 +180,24 @@ public class BigInt extends Number implements Comparable<BigInt> {
     public String toHexString() {
         StringBuilder sb = new StringBuilder("");
         for (int i = digits.length - 1; i >= 0; i--) {
-            sb.append(Integer.toHexString(digits[i]));
+            StringBuilder sub = new StringBuilder(Integer.toHexString(digits[i]));
+            if ((i < digits.length -1) && sub.length()< 8){
+                for (int j = sub.length(); j < 8; j ++){
+                    sub.insert(0, '0');
+                }
+                
+            }
+            sb.append(sub.toString());
         }
+        int leadingZeros = 0;
+        for (int i = 0; i < sb.length() - 1; i++){
+            if (sb.charAt(i) == '0'){
+                leadingZeros++;
+            }
+            else break;
+        }
+        sb.delete(0, leadingZeros);
+        
         return sb.toString().toUpperCase();
     }
 
@@ -818,13 +834,15 @@ public class BigInt extends Number implements Comparable<BigInt> {
 
     private int[] parseHexString(String hexString) {
         int len = hexString.length();
-        int[] dig = new int[len / 8 + 1];
-        for (int i = 0, j = len / 8; i < len; i += 8) {
-            if (i + 8 >= len) {
-                dig[j--] = Integer.parseUnsignedInt(hexString.substring(i), 16);
-            } else {
-                dig[j--] = Integer.parseUnsignedInt(hexString.substring(i, i + 8), 16);
+        int tail = len%8;
+        int[] dig = new int[len / 8 + ((tail ==0) ? 0 : 1)];
+        for (int i = len, j = 0; i >= 0; i-= 8){
+            if (i <= tail && tail > 0 ){
+                dig[dig.length- 1] = Integer.parseUnsignedInt(hexString.substring(0 ,tail), 16);
+                break;
             }
+            if (i < 8) break;
+            dig[j++] = Integer.parseUnsignedInt(hexString.substring(i - 8, i), 16);
         }
         return dig;
     }

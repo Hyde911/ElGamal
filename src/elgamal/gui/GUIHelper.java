@@ -78,8 +78,8 @@ public class GUIHelper {
 
     }
 
-    public Map<String, BigInt> newKeys() {
-        return elGamal.generateKeys();
+    public Map<String, BigInt> newKeys(int bitLentgh) {
+        return elGamal.generateKeys(bitLentgh);
     }
 
     public String splitHexString(String hex) {
@@ -97,7 +97,8 @@ public class GUIHelper {
 
     public String mergeHexString(String hex) {
         String[] split = hex.split(":");
-        return String.join("", split);
+        String ret =String.join("", split);
+        return ret;
     }
 
     public class NoFileException extends Exception {
