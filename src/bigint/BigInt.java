@@ -156,8 +156,8 @@ public class BigInt extends Number implements Comparable<BigInt> {
      * @return
      */
     public static BigInt getRandom(int bitLength) {
-        int additionalInt = (bitLength % 32 == 0) ? 0 : 1;
-        int[] newDigits = new int[(bitLength / 32) + additionalInt];
+        final int additionalInt = (bitLength % 32 == 0) ? 0 : 1;
+        final int[] newDigits = new int[(bitLength / 32) + additionalInt];
         Random rand = new Random();
         for (int i = 0; i < newDigits.length - 1; i++) {
             newDigits[i] = rand.nextInt();
@@ -178,7 +178,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
     }
 
     public String toHexString() {
-        StringBuilder sb = new StringBuilder("");
+        final StringBuilder sb = new StringBuilder("");
         for (int i = digits.length - 1; i >= 0; i--) {
             StringBuilder sub = new StringBuilder(Integer.toHexString(digits[i]));
             if ((i < digits.length -1) && sub.length()< 8){
@@ -351,7 +351,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
      * @return
      */
     public byte[] toByteArray() {
-        int byteLength = bitLength() / 8 + 1;
+        final int byteLength = bitLength() / 8 + 1;
         byte[] byteArray = new byte[byteLength];
 
         for (int i = 0, j = 0; i < digits.length; i++) {
@@ -395,9 +395,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         if (m.isZero()) {
             throw new ArithmeticException();
         }
-        BigInt quotient = this.divide(m);
-        BigInt mul = m.multiply(quotient);
-        BigInt reminder = this.subtract(mul);
+        final BigInt quotient = this.divide(m);
+        final BigInt mul = m.multiply(quotient);
+        final BigInt reminder = this.subtract(mul);
         return reminder;
     }
 
@@ -406,13 +406,12 @@ public class BigInt extends Number implements Comparable<BigInt> {
      * @return
      */
     public int bitLength() {
-        int length = digits.length;
+        final int length = digits.length;
         if (length == 0) {
             return 0;
         }
-        int tmp1 = (length - 1) << 5;
-        int tmp3 = digits[length - 1];
-        int tmp2 = 32 - Integer.numberOfLeadingZeros(digits[length - 1]);
+        final int tmp1 = (length - 1) << 5;
+        final int tmp2 = 32 - Integer.numberOfLeadingZeros(digits[length - 1]);
         return tmp1 + tmp2;
     }
 
@@ -468,9 +467,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
     simple addition
     */
     private int[] addition(final int[] n1, final int[] n2) {
-        int size1 = n1.length;
-        int size2 = n2.length;
-        int[] add = new int[size1 + 1];
+        final int size1 = n1.length;
+        final int size2 = n2.length;
+        final int[] add = new int[size1 + 1];
         long reminder = 0;
         for (int i = 0; i < size1; i++) {
             int digit1 = n1[i];
@@ -496,10 +495,10 @@ public class BigInt extends Number implements Comparable<BigInt> {
     simple subtraction
     */
     private int[] subtraction(final int[] n1, final int[] n2) {
-        int size1 = n1.length;
-        int size2 = n2.length;
+        final int size1 = n1.length;
+        final int size2 = n2.length;
 
-        int[] sub = new int[size1];
+        final int[] sub = new int[size1];
         long reminder = 0;
         int i = 0;
         for (; i < size1; i++) {
@@ -514,10 +513,6 @@ public class BigInt extends Number implements Comparable<BigInt> {
             sub[i] = (int) (reminder);
             reminder >>= 32;
         }
-        if (reminder != 0) {
-
-        }
-
         return sub;
     }
     /*
@@ -535,13 +530,13 @@ public class BigInt extends Number implements Comparable<BigInt> {
             if (size2 < size1) {
                 split = size2 / 2;
             }
-            int[] part1 = multiplication(n2, size2 - split, split, n1, size1 - split, split);//a c
-            int[] part2 = multiplication(n2, split, 0, n1, split, 0);//b d
-            int[] a_b = addArrays(n2, size2 - split, split, n2, split, 0);
-            int[] c_d = addArrays(n1, size1 - split, split, n1, split, 0);
-            int a_bSize = a_b.length;
-            int c_dSize = c_d.length;
-            int[] part3 = multiplication(a_b, a_bSize, 0, c_d, c_dSize, 0);
+            final int[] part1 = multiplication(n2, size2 - split, split, n1, size1 - split, split);//a c
+            final int[] part2 = multiplication(n2, split, 0, n1, split, 0);//b d
+            final int[] a_b = addArrays(n2, size2 - split, split, n2, split, 0);
+            final int[] c_d = addArrays(n1, size1 - split, split, n1, split, 0);
+            final int a_bSize = a_b.length;
+            final int c_dSize = c_d.length;
+            final int[] part3 = multiplication(a_b, a_bSize, 0, c_d, c_dSize, 0);
 
             return addArrays(addArrays(shiftBaseTimes(part1, 2 * split), shiftBaseTimes(subtraction(part3, addArrays(part1, part2)), split)), part2);
         }
@@ -553,9 +548,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
         if ((number.digits[0] & 0x01) == 0){
             return false;
         }
-        BigInt minusOne = number.subtract(ONE);
-        BigInt mm = new BigInt(TWO.pow(minusOne.bitLength() - 1));
-        BigInt m = minusOne.shiftLeft(mm.intValue());
+        final BigInt minusOne = number.subtract(ONE);
+        final BigInt mm = new BigInt(TWO.pow(minusOne.bitLength() - 1));
+        final BigInt m = minusOne.shiftLeft(mm.intValue());
         for (int k = 0; k < iterations; k++) {
             BigInt x = BigInt.getRandom(number.bitLength());
             while (x.compareTo(number) >= 0 || x.compareTo(ZERO) <= 0) {
@@ -568,7 +563,6 @@ public class BigInt extends Number implements Comparable<BigInt> {
                     return false;
                 y = y.modPow(TWO, number);
             }
-
         }
         return true;
     }
@@ -576,9 +570,9 @@ public class BigInt extends Number implements Comparable<BigInt> {
     shifts []m n's times to the left
     */
     private int[] shiftLeft(int[] mag, int n) {
-        int ints = n >>> 5;
-        int bits1 = n & 0x1f;
-        int dLength = mag.length;
+        final int ints = n >>> 5;
+        final int bits1 = n & 0x1f;
+        final int dLength = mag.length;
         int result[] = null;
 
         if (bits1 == 0) {
@@ -621,7 +615,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
     shifts this.digits by one bit to the right
     */
     private BigInt shiftR() {
-        int newMag[] = new int[size];
+        final int newMag[] = new int[size];
         newMag[0] = digits[0] >>> 1;
         for (int i = 1; i < size; i++) {
             int tmp = digits[i] << 31;
@@ -666,7 +660,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
     implementation of modular exponentiation with positive exponent
     */
     private BigInt modPositivePow(BigInt exp, BigInt mod) {
-        BigInt x = this;
+        final BigInt x = this;
         BigInt s = ONE;
         BigInt z = x.mod(mod);
         int mask;
@@ -707,7 +701,7 @@ public class BigInt extends Number implements Comparable<BigInt> {
     }
 
     private int[] subArrayAddition(final int[] n1, final int size1, int startIndex1, int[] n2, int size2) {
-        int[] add = new int[size1 + 1];
+        final int[] add = new int[size1 + 1];
         long reminder = 0;
         for (int i = startIndex1; i < size1; i++) {
             int digit1 = n1[i];
@@ -833,8 +827,8 @@ public class BigInt extends Number implements Comparable<BigInt> {
     }
 
     private int[] parseHexString(String hexString) {
-        int len = hexString.length();
-        int tail = len%8;
+        final int len = hexString.length();
+        final int tail = len%8;
         int[] dig = new int[len / 8 + ((tail ==0) ? 0 : 1)];
         for (int i = len, j = 0; i >= 0; i-= 8){
             if (i <= tail && tail > 0 ){
